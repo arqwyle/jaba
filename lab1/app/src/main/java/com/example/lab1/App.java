@@ -3,12 +3,158 @@
  */
 package com.example.lab1;
 
+import java.io.*;
+import java.util.ArrayList;
+import org.apache.commons.cli.*;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+
+    private static String outputPath = new String();
+    private static String prefix = new String();
+    private static boolean appendMode = false;
+    private static boolean fullStats = false;
+    private static boolean shortStats = false;
+
+    private static ArrayList<Integer> ints = new ArrayList<>();
+    private static ArrayList<Double> floats = new ArrayList<>();
+    private static ArrayList<String> strings = new ArrayList<>();
+
+    private static int minInt = Integer.MAX_VALUE;
+    private static int maxInt = Integer.MIN_VALUE;
+    private static long sumInt = 0;
+
+    private static double minFloat = Double.MAX_VALUE;
+    private static double maxFloat = Double.MIN_VALUE;
+    private static double sumFloat = 0;
+
+    private static int minStringLength = Integer.MAX_VALUE;
+    private static int maxStringLength = 0;
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        Options options = new Options();
+        options.addOption("o", true, "Output directory");
+        options.addOption("p", true, "Output file prefix");
+        options.addOption("a", false, "Append mode");
+        options.addOption("s", false, "Short statistics");
+        options.addOption("f", false, "Full statistics");
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cmd = parser.parse(options, args);
+
+            outputPath = cmd.getOptionValue("o", "");
+            prefix = cmd.getOptionValue("p", "");
+            appendMode = cmd.hasOption("a");
+            fullStats = cmd.hasOption("f");
+            shortStats = cmd.hasOption("s");
+
+            String[] inputFiles = cmd.getArgs();
+            if (inputFiles.length == 0) {
+                System.out.println("No input files specified.");
+                return;
+            }
+
+            processFiles(inputFiles);
+            writeToFile(prefix + "integers.txt", ints);
+            writeToFile(prefix + "floats.txt", floats);
+            writeToFile(prefix + "strings.txt", strings);
+            printStatistics();
+
+        } catch (ParseException e) {
+            System.out.println("Error parsing command line options: " + e.getMessage());
+        }
+    }
+
+    private static void processFiles(String[] inputFiles) {
+        for (String file : inputFiles) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    processLine(line);
+                }
+            } catch (IOException e) {
+                System.out.println("Error reading file " + file + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private static void processLine(String line) {
+        try {
+            int intValue = Integer.parseInt(line);
+            ints.add(intValue);
+            sumInt += intValue;
+            minInt = Math.min(minInt, intValue);
+            maxInt = Math.max(maxInt, intValue);
+        } catch (NumberFormatException e1) {
+            try {
+                double floatValue = Double.parseDouble(line);
+                floats.add(floatValue);
+                sumFloat += floatValue;
+                minFloat = Math.min(minFloat, floatValue);
+                maxFloat = Math.max(maxFloat, floatValue);
+            } catch (NumberFormatException e2) {
+                strings.add(line);
+                minStringLength = Math.min(minStringLength, line.length());
+                maxStringLength = Math.max(maxStringLength, line.length());
+            }
+        }
+    }
+
+    private static <T> void writeToFile(String fileName, ArrayList<T> list) {
+        if (list.isEmpty()) {
+            return;
+        }
+        try {
+            File directory = new File(outputPath);
+            directory.mkdirs();
+        } catch (SecurityException e) {
+            System.out.println("Error creating output directory " + fileName + ": " + e.getMessage());
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(!outputPath.isEmpty() ? outputPath + '\\' + fileName : fileName, appendMode))) {
+            for (T item : list) {
+                writer.write(item.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error writing to file " + fileName + ": " + e.getMessage());
+        }
+    }
+
+    private static void printStatistics() {
+        if (fullStats) {
+            if (!ints.isEmpty()) {
+                System.out.println("Integers:"
+                        + "Count=" + ints.size()
+                        + ", Min=" + minInt
+                        + ", Max=" + maxInt
+                        + ", Sum=" + sumInt
+                        + ", Average=" + (!ints.isEmpty() ? (double) sumInt / ints.size() : 0));
+            }
+            if (!floats.isEmpty()) {
+                System.out.println("Floats:"
+                        + "Count=" + floats.size()
+                        + ", Min=" + minFloat
+                        + ", Max=" + maxFloat
+                        + ", Sum=" + sumFloat
+                        + ", Average=" + (!floats.isEmpty() ? sumFloat / floats.size() : 0));
+            }
+            if (!strings.isEmpty()) {
+                System.out.println("Strings:"
+                        + "Count=" + strings.size()
+                        + ", Min Length=" + minStringLength
+                        + ", Max Length=" + maxStringLength);
+            }
+        }
+        if (shortStats) {
+            if (!ints.isEmpty()) {
+                System.out.println("Integers: Count=" + ints.size());
+            }
+            if (!floats.isEmpty()) {
+                System.out.println("Floats: Count=" + floats.size());
+            }
+            if (!strings.isEmpty()) {
+                System.out.println("Strings: Count=" + strings.size());
+            }
+        }
     }
 }
