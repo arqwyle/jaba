@@ -8,27 +8,26 @@ import java.util.ArrayList;
 import org.apache.commons.cli.*;
 
 public class App {
+    protected static String outputPath = new String();
+    protected static String prefix = new String();
+    protected static boolean appendMode = false;
+    protected static boolean fullStats = false;
+    protected static boolean shortStats = false;
 
-    private static String outputPath = new String();
-    private static String prefix = new String();
-    private static boolean appendMode = false;
-    private static boolean fullStats = false;
-    private static boolean shortStats = false;
+    protected static ArrayList<Integer> ints = new ArrayList<>();
+    protected static ArrayList<Double> floats = new ArrayList<>();
+    protected static ArrayList<String> strings = new ArrayList<>();
 
-    private static ArrayList<Integer> ints = new ArrayList<>();
-    private static ArrayList<Double> floats = new ArrayList<>();
-    private static ArrayList<String> strings = new ArrayList<>();
+    protected static int minInt = Integer.MAX_VALUE;
+    protected static int maxInt = Integer.MIN_VALUE;
+    protected static long sumInt = 0;
 
-    private static int minInt = Integer.MAX_VALUE;
-    private static int maxInt = Integer.MIN_VALUE;
-    private static long sumInt = 0;
+    protected static double minFloat = Double.MAX_VALUE;
+    protected static double maxFloat = Double.MIN_VALUE;
+    protected static double sumFloat = 0;
 
-    private static double minFloat = Double.MAX_VALUE;
-    private static double maxFloat = Double.MIN_VALUE;
-    private static double sumFloat = 0;
-
-    private static int minStringLength = Integer.MAX_VALUE;
-    private static int maxStringLength = 0;
+    protected static int minStringLength = Integer.MAX_VALUE;
+    protected static int maxStringLength = 0;
 
     public static void main(String[] args) {
         Options options = new Options();
@@ -65,7 +64,7 @@ public class App {
         }
     }
 
-    private static void processFiles(String[] inputFiles) {
+    protected static void processFiles(String[] inputFiles) {
         for (String file : inputFiles) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -78,7 +77,7 @@ public class App {
         }
     }
 
-    private static void processLine(String line) {
+    protected static void processLine(String line) {
         try {
             int intValue = Integer.parseInt(line);
             ints.add(intValue);
@@ -100,7 +99,7 @@ public class App {
         }
     }
 
-    private static <T> void writeToFile(String fileName, ArrayList<T> list) {
+    protected static <T> void writeToFile(String fileName, ArrayList<T> list) {
         if (list.isEmpty()) {
             return;
         }
@@ -120,7 +119,7 @@ public class App {
         }
     }
 
-    private static void printStatistics() {
+    protected static void printStatistics() {
         if (fullStats) {
             if (!ints.isEmpty()) {
                 System.out.println("Integers:"

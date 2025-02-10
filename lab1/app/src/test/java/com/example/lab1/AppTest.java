@@ -3,5 +3,72 @@
  */
 package com.example.lab1;
 
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
 class AppTest {
+    @Test
+    public void testProcessLineWithInteger() {
+        App.processLine("42");
+        assertEquals(1, App.ints.size());
+        assertEquals(42, App.ints.get(0).intValue());
+        assertEquals(42, App.sumInt);
+        assertEquals(42, App.minInt);
+        assertEquals(42, App.maxInt);
+    }
+
+    @Test
+    public void testProcessLineWithFloat() {
+        App.processLine("3.14");
+        assertEquals(1, App.floats.size());
+        assertEquals(3.14, App.floats.get(0), 0.001);
+        assertEquals(3.14, App.sumFloat, 0.001);
+        assertEquals(3.14, App.minFloat, 0.001);
+        assertEquals(3.14, App.maxFloat, 0.001);
+    }
+    
+    @Test
+    public void testProcessLineWithString() {
+        App.processLine("Hello");
+        assertEquals(1, App.strings.size());
+        assertEquals("Hello", App.strings.get(0));
+        assertEquals(5, App.minStringLength);
+        assertEquals(5, App.maxStringLength);
+    }
+    
+    @Test
+    public void testMainWithValidInput() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-o", "output", "-p", "test_", tempFile.toString()};
+        App.main(args);
+
+        assertTrue(Files.exists(Paths.get("output/test_integers.txt")));
+        assertTrue(Files.exists(Paths.get("output/test_floats.txt")));
+        assertTrue(Files.exists(Paths.get("output/test_strings.txt")));
+
+        List<String> integerLines = Files.readAllLines(Paths.get("output/test_integers.txt"));
+        List<String> floatLines = Files.readAllLines(Paths.get("output/test_floats.txt"));
+        List<String> stringLines = Files.readAllLines(Paths.get("output/test_strings.txt"));
+
+        assertEquals(1, integerLines.size());
+        assertEquals("42", integerLines.get(0));
+
+        assertEquals(1, floatLines.size());
+        assertEquals("3.14", floatLines.get(0));
+
+        assertEquals(1, stringLines.size());
+        assertEquals("Hello", stringLines.get(0));
+
+        Files.delete(tempFile);
+        Files.delete(Paths.get("output/test_integers.txt"));
+        Files.delete(Paths.get("output/test_floats.txt"));
+        Files.delete(Paths.get("output/test_strings.txt"));
+        Files.delete(Paths.get("output"));
+    }
 }
