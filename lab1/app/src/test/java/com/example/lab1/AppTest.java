@@ -11,50 +11,49 @@ import java.nio.file.*;
 import java.util.*;
 
 class AppTest {
-    @Test
-    public void testProcessLineWithInteger() {
-        App.processLine("42");
-        assertEquals(1, App.ints.size());
-        assertEquals(42, App.ints.get(0).intValue());
-        assertEquals(42, App.sumInt);
-        assertEquals(42, App.minInt);
-        assertEquals(42, App.maxInt);
+
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+
+    @BeforeEach
+    public void setUpStreams() {
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @AfterEach
+    public void restoreStreams() {
+        System.setOut(originalOut);
     }
 
     @Test
-    public void testProcessLineWithFloat() {
-        App.processLine("3.14");
-        assertEquals(1, App.floats.size());
-        assertEquals(3.14, App.floats.get(0), 0.001);
-        assertEquals(3.14, App.sumFloat, 0.001);
-        assertEquals(3.14, App.minFloat, 0.001);
-        assertEquals(3.14, App.maxFloat, 0.001);
+    public void testWithNoFiles() throws IOException {
+        String[] args = {};
+        App.main(args);
+        assertEquals("No input files specified.", outContent.toString().trim());
     }
-    
+
     @Test
-    public void testProcessLineWithString() {
-        App.processLine("Hello");
-        assertEquals(1, App.strings.size());
-        assertEquals("Hello", App.strings.get(0));
-        assertEquals(5, App.minStringLength);
-        assertEquals(5, App.maxStringLength);
+    public void testWithNonExistentFiles() throws IOException {
+        String[] args = {"aboba"};
+        App.main(args);
+        assertEquals("Error reading file aboba: aboba (Не удается найти указанный файл)", outContent.toString().trim());
     }
-    
+
     @Test
-    public void testMainWithValidInput() throws IOException {
+    public void testWithValidInput() throws IOException {
         Path tempFile = Files.createTempFile("input", ".txt");
         Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
 
-        String[] args = {"-o", "output", "-p", "test_", tempFile.toString()};
+        String[] args = {tempFile.toString()};
         App.main(args);
 
-        assertTrue(Files.exists(Paths.get("output/test_integers.txt")));
-        assertTrue(Files.exists(Paths.get("output/test_floats.txt")));
-        assertTrue(Files.exists(Paths.get("output/test_strings.txt")));
+        assertTrue(Files.exists(Paths.get("integers.txt")));
+        assertTrue(Files.exists(Paths.get("floats.txt")));
+        assertTrue(Files.exists(Paths.get("strings.txt")));
 
-        List<String> integerLines = Files.readAllLines(Paths.get("output/test_integers.txt"));
-        List<String> floatLines = Files.readAllLines(Paths.get("output/test_floats.txt"));
-        List<String> stringLines = Files.readAllLines(Paths.get("output/test_strings.txt"));
+        List<String> integerLines = Files.readAllLines(Paths.get("integers.txt"));
+        List<String> floatLines = Files.readAllLines(Paths.get("floats.txt"));
+        List<String> stringLines = Files.readAllLines(Paths.get("strings.txt"));
 
         assertEquals(1, integerLines.size());
         assertEquals("42", integerLines.get(0));
@@ -66,9 +65,126 @@ class AppTest {
         assertEquals("Hello", stringLines.get(0));
 
         Files.delete(tempFile);
-        Files.delete(Paths.get("output/test_integers.txt"));
-        Files.delete(Paths.get("output/test_floats.txt"));
-        Files.delete(Paths.get("output/test_strings.txt"));
+        Files.delete(Paths.get("integers.txt"));
+        Files.delete(Paths.get("floats.txt"));
+        Files.delete(Paths.get("strings.txt"));
+    }
+
+    @Test
+    public void testWithOutput() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-o", "output", tempFile.toString()};
+        App.main(args);
+
+        assertTrue(Files.exists(Paths.get("output/integers.txt")));
+        assertTrue(Files.exists(Paths.get("output/floats.txt")));
+        assertTrue(Files.exists(Paths.get("output/strings.txt")));
+
+        List<String> integerLines = Files.readAllLines(Paths.get("output/integers.txt"));
+        List<String> floatLines = Files.readAllLines(Paths.get("output/floats.txt"));
+        List<String> stringLines = Files.readAllLines(Paths.get("output/strings.txt"));
+
+        assertEquals(1, integerLines.size());
+        assertEquals("42", integerLines.get(0));
+
+        assertEquals(1, floatLines.size());
+        assertEquals("3.14", floatLines.get(0));
+
+        assertEquals(1, stringLines.size());
+        assertEquals("Hello", stringLines.get(0));
+
+        Files.delete(tempFile);
+        Files.delete(Paths.get("output/integers.txt"));
+        Files.delete(Paths.get("output/floats.txt"));
+        Files.delete(Paths.get("output/strings.txt"));
         Files.delete(Paths.get("output"));
+    }
+
+    @Test
+    public void testWithPrefix() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-p", "test_", tempFile.toString()};
+        App.main(args);
+
+        assertTrue(Files.exists(Paths.get("test_integers.txt")));
+        assertTrue(Files.exists(Paths.get("test_floats.txt")));
+        assertTrue(Files.exists(Paths.get("test_strings.txt")));
+
+        List<String> integerLines = Files.readAllLines(Paths.get("test_integers.txt"));
+        List<String> floatLines = Files.readAllLines(Paths.get("test_floats.txt"));
+        List<String> stringLines = Files.readAllLines(Paths.get("test_strings.txt"));
+
+        assertEquals(1, integerLines.size());
+        assertEquals("42", integerLines.get(0));
+
+        assertEquals(1, floatLines.size());
+        assertEquals("3.14", floatLines.get(0));
+
+        assertEquals(1, stringLines.size());
+        assertEquals("Hello", stringLines.get(0));
+
+        Files.delete(tempFile);
+        Files.delete(Paths.get("test_integers.txt"));
+        Files.delete(Paths.get("test_floats.txt"));
+        Files.delete(Paths.get("test_strings.txt"));
+    }
+
+    @Test
+    public void testWithAppend() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-a", tempFile.toString()};
+        App.main(args);
+        App.main(args);
+
+        List<String> integerLines = Files.readAllLines(Paths.get("integers.txt"));
+        List<String> floatLines = Files.readAllLines(Paths.get("floats.txt"));
+        List<String> stringLines = Files.readAllLines(Paths.get("strings.txt"));
+
+        assertEquals(2, integerLines.size());
+        assertEquals(2, floatLines.size());
+        assertEquals(2, stringLines.size());
+
+        Files.delete(tempFile);
+        Files.delete(Paths.get("integers.txt"));
+        Files.delete(Paths.get("floats.txt"));
+        Files.delete(Paths.get("strings.txt"));
+    }
+
+    @Test
+    public void testWithFullStatistics() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-f", tempFile.toString()};
+        App.main(args);
+        assertEquals("Integers:Count=1,Min=42,Max=42,Sum=42,Average=42.0"
+                + "Floats:Count=1,Min=3.14,Max=3.14,Sum=3.14,Average=3.14"
+                + "Strings:Count=1,MinLength=5,MaxLength=5", outContent.toString().replaceAll("\\s", ""));
+        
+        Files.delete(tempFile);
+        Files.delete(Paths.get("integers.txt"));
+        Files.delete(Paths.get("floats.txt"));
+        Files.delete(Paths.get("strings.txt"));
+    }
+
+    @Test
+    public void testWithShortStatistics() throws IOException {
+        Path tempFile = Files.createTempFile("input", ".txt");
+        Files.write(tempFile, Arrays.asList("42", "3.14", "Hello"));
+
+        String[] args = {"-s", tempFile.toString()};
+        App.main(args);
+        assertEquals("Integers:Count=1Floats:Count=1Strings:Count=1", outContent.toString().replaceAll("\\s", ""));
+        
+        Files.delete(tempFile);
+        Files.delete(Paths.get("integers.txt"));
+        Files.delete(Paths.get("floats.txt"));
+        Files.delete(Paths.get("strings.txt"));
     }
 }
