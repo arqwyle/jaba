@@ -1,4 +1,5 @@
 package org.example;
+
 import java.util.concurrent.TimeUnit;
 
 class ProgressBar implements Runnable {
@@ -31,29 +32,26 @@ class ProgressBar implements Runnable {
         long elapsedTime = System.currentTimeMillis() - startTime;
         synchronized (System.out) {
             clearLine(threadNumber);
-            System.out.printf("%-15s %d %-15s %d ms%n", "Thread " + threadNumber, threadId, "Completed in:", elapsedTime);
+            System.out.printf("%-10s %d %-10s %d ms%n", "Thread " + threadNumber, threadId, "Completed in:", elapsedTime);
         }
     }
 
-    // Очистка строки с использованием ANSI-кодов
     private void clearLine(int threadNumber) {
-        System.out.print("\033[" + (threadNumber + 1) + ";0H"); // Перемещаем курсор
-        System.out.print("\r" + " ".repeat(100) + "\r"); // Очищаем строку
+        System.out.print("\033[" + (threadNumber + 1) + ";0H");
+        System.out.print("\r" + " ".repeat(100) + "\r");
     }
 
-    // Вывод прогресса
     private void printProgress(int threadNumber, long threadId, String progressBar, int length) {
-        System.out.printf("%-15s %d %-15s %s]%n",
+        System.out.printf("%-10s %d %-10s %s]%n",
                 "Thread " + threadNumber, threadId, "Progress:", progressBar + " ".repeat(length - progressBar.length()));
     }
 }
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        int numberOfThreads = 12;
+        int numberOfThreads = Runtime.getRuntime().availableProcessors();
         int calculationLength = 20;
 
-        // Очистка консоли перед началом работы
         clearConsole();
 
         Thread[] threads = new Thread[numberOfThreads];
@@ -69,16 +67,13 @@ public class Main {
             thread.join();
         }
 
-        // Вернуть курсор в конец вывода
         synchronized (System.out) {
-            System.out.print("\033[" + (numberOfThreads + 2) + ";0H"); // Перемещаем курсор в конец
+            System.out.print("\033[" + (numberOfThreads + 2) + ";0H");
         }
     }
 
-    // Функция для очистки консоли
     private static void clearConsole() {
-        // Попытка очистить консоль с помощью ANSI-кода
         System.out.print("\033[H\033[2J");
-        System.out.flush(); // Принудительная отправка данных в консоль
+        System.out.flush();
     }
 }
