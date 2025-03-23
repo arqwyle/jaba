@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PetService {
@@ -15,34 +16,33 @@ public class PetService {
 
     public Pet addPet(Pet pet) {
         validatePet(pet);
-        return petRepository.addPet(pet);
+        return petRepository.save(pet); // Метод save() сохраняет или обновляет сущность
     }
 
     public Pet updatePet(Pet pet) {
         validatePet(pet);
-        if (petRepository.getPetById(pet.getId()) == null) {
+        Optional<Pet> existingPet = petRepository.findById(pet.getId());
+        if (existingPet.isEmpty()) {
             throw new RuntimeException("Pet not found");
         }
-        return petRepository.updatePet(pet);
+        return petRepository.save(pet);
     }
 
     public Pet getPetById(Long petId) {
-        Pet pet = petRepository.getPetById(petId);
-        if (pet == null) {
-            throw new RuntimeException("Pet not found");
-        }
-        return pet;
+        return petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found"));
     }
 
     public boolean deletePet(Long petId) {
-        if (petRepository.getPetById(petId) != null) {
-            return petRepository.deletePet(petId);
+        if (!petRepository.existsById(petId)) {
+            return false;
         }
-        return false;
+        petRepository.deleteById(petId);
+        return true;
     }
 
     public List<Pet> getAllPets() {
-        return petRepository.getAllPets();
+        return petRepository.findAll();
     }
 
     private void validatePet(Pet pet) {

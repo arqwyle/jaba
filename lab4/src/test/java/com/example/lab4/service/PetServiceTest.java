@@ -8,9 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class PetServiceTest {
 
@@ -28,60 +31,111 @@ class PetServiceTest {
     @Test
     void testAddPet() {
         Pet pet = new Pet();
+        pet.setId(1L);
         pet.setName("aboba");
 
-        when(petRepository.addPet(any())).thenReturn(pet);
+        when(petRepository.save(pet)).thenReturn(pet);
 
         Pet result = petService.addPet(pet);
 
         assertNotNull(result);
         assertEquals("aboba", result.getName());
+        verify(petRepository, times(1)).save(pet);
     }
 
     @Test
     void testUpdatePet() {
-        Pet existingPet = new Pet();
-        existingPet.setId(1L);
-        existingPet.setName("aboba");
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("bebra");
 
-        when(petRepository.getPetById(existingPet.getId())).thenReturn(existingPet);
-        when(petRepository.updatePet(any())).thenAnswer(invocation -> {
-            Pet updatedPet = invocation.getArgument(0);
-            updatedPet.setId(2L);
-            updatedPet.setName("bebra");
-            return updatedPet;
-        });
+        when(petRepository.findById(1L)).thenReturn(Optional.of(pet));
+        when(petRepository.save(pet)).thenReturn(pet);
 
-        Pet updatedPet = petService.updatePet(existingPet);
+        Pet result = petService.updatePet(pet);
 
-        assertNotNull(updatedPet);
-        assertEquals("bebra", updatedPet.getName());
-        assertEquals(2L, updatedPet.getId());
+        assertNotNull(result);
+        assertEquals("bebra", result.getName());
+        verify(petRepository, times(1)).findById(1L);
+        verify(petRepository, times(1)).save(pet);
+    }
+
+    @Test
+    void testUpdatePet_NotFound() {
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("aboba");
+
+        when(petRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> petService.updatePet(pet));
+        assertEquals("Pet not found", exception.getMessage());
+        verify(petRepository, times(1)).findById(1L);
     }
 
     @Test
     void testGetPetById() {
         Pet pet = new Pet();
         pet.setId(1L);
+        pet.setName("aboba");
 
-        when(petRepository.getPetById(any())).thenReturn(pet);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(pet));
 
         Pet result = petService.getPetById(1L);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertEquals("aboba", result.getName());
+        verify(petRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetPetById_NotFound() {
+        when(petRepository.findById(1L)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> petService.getPetById(1L));
+        assertEquals("Pet not found", exception.getMessage());
+        verify(petRepository, times(1)).findById(1L);
     }
 
     @Test
     void testDeletePet() {
-        Pet existingPet = new Pet();
-        existingPet.setId(1L);
+        when(petRepository.existsById(1L)).thenReturn(true);
 
-        when(petRepository.getPetById(1L)).thenReturn(existingPet);
-        when(petRepository.deletePet(1L)).thenReturn(true);
+        petService.deletePet(1L);
+
+        verify(petRepository, times(1)).existsById(1L);
+        verify(petRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testDeletePet_NotFound() {
+        when(petRepository.existsById(1L)).thenReturn(false);
 
         boolean result = petService.deletePet(1L);
 
-        assertTrue(result);
+        assertFalse(result);
+        verify(petRepository, times(1)).existsById(1L);
+    }
+
+    @Test
+    void testGetAllPets() {
+        Pet pet1 = new Pet();
+        pet1.setId(1L);
+        pet1.setName("aboba");
+
+        Pet pet2 = new Pet();
+        pet2.setId(2L);
+        pet2.setName("bebra");
+
+        when(petRepository.findAll()).thenReturn(Arrays.asList(pet1, pet2));
+
+        List<Pet> result = petService.getAllPets();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("aboba", result.get(0).getName());
+        assertEquals("bebra", result.get(1).getName());
+        verify(petRepository, times(1)).findAll();
     }
 }

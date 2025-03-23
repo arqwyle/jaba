@@ -1,11 +1,20 @@
 package com.example.lab4.model;
 
+import jakarta.persistence.*;
+
 import java.util.List;
 
+@Entity
 public class Pet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pet_id")
     private List<Tag> tags;
     private String status;
 
