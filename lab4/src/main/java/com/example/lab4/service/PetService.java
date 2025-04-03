@@ -16,7 +16,7 @@ public class PetService {
 
     public Pet addPet(Pet pet) {
         validatePet(pet);
-        return petRepository.save(pet); // Метод save() сохраняет или обновляет сущность
+        return petRepository.save(pet);
     }
 
     public Pet updatePet(Pet pet) {
