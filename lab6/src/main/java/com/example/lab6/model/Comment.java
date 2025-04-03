@@ -1,5 +1,6 @@
 package com.example.lab6.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -19,6 +20,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "video_id")
+    @JsonBackReference
     private Video video;
 
     public Long getId() {
