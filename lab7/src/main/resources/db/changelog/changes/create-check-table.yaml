@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 6
+      author: admin
+      changes:
+        - createTable:
+            tableName: check
+            columns:
+              - column:
+                  name: payment_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: bank_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false

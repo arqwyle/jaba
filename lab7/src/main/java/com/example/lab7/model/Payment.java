@@ -17,4 +17,6 @@ public abstract class Payment {
     private Long paymentId;
 
     private BigDecimal amount;
+
+    private String dtype;
 }

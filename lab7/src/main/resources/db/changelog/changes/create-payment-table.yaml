@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: admin
+      changes:
+        - createTable:
+            tableName: payment
+            columns:
+              - column:
+                  name: payment_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dtype
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false

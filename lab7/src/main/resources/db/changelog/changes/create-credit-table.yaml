@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: admin
+      changes:
+        - createTable:
+            tableName: credit
+            columns:
+              - column:
+                  name: payment_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: exp_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false

@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/create-address-table.yaml
+  - include:
+      file: db/changelog/changes/create-customer-table.yaml
+  - include:
+      file: db/changelog/changes/create-payment-table.yaml
+  - include:
+      file: db/changelog/changes/create-cash-table.yaml
+  - include:
+      file: db/changelog/changes/create-credit-table.yaml
+  - include:
+      file: db/changelog/changes/create-check-table.yaml
+  - include:
+      file: db/changelog/changes/create-order-table.yaml
+  - include:
+      file: db/changelog/changes/create-item-table.yaml
+  - include:
+      file: db/changelog/changes/create-order-detail-table.yaml
+  - include:
+      file: db/changelog/changes/add-foreign-keys.yaml

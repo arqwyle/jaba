@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: admin
+      changes:
+        - createTable:
+            tableName: cash
+            columns:
+              - column:
+                  name: payment_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: cash_tendered
+                  type: DECIMAL
+                  constraints:
+                    nullable: false
