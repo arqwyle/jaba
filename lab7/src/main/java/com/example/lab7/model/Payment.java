@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "payment_type")
 public abstract class Payment {
 
     @Id
@@ -17,6 +16,4 @@ public abstract class Payment {
     private Long paymentId;
 
     private BigDecimal amount;
-
-    private String dtype;
 }

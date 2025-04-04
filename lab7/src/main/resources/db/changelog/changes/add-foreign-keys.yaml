@@ -23,19 +23,19 @@ databaseChangeLog:
             referencedColumnNames: payment_id
         - addForeignKeyConstraint:
             constraintName: fk_check_payment
-            baseTableName: check
+            baseTableName: check_
             baseColumnNames: payment_id
             referencedTableName: payment
             referencedColumnNames: payment_id
         - addForeignKeyConstraint:
             constraintName: fk_order_customer
-            baseTableName: order
+            baseTableName: order_
             baseColumnNames: customer_id
             referencedTableName: customer
             referencedColumnNames: customer_id
         - addForeignKeyConstraint:
             constraintName: fk_order_payment
-            baseTableName: order
+            baseTableName: order_
             baseColumnNames: payment_id
             referencedTableName: payment
             referencedColumnNames: payment_id
@@ -43,7 +43,7 @@ databaseChangeLog:
             constraintName: fk_order_detail_order
             baseTableName: order_detail
             baseColumnNames: order_id
-            referencedTableName: order
+            referencedTableName: order_
             referencedColumnNames: order_id
         - addForeignKeyConstraint:
             constraintName: fk_order_detail_item

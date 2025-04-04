@@ -4,7 +4,7 @@ databaseChangeLog:
       author: admin
       changes:
         - createTable:
-            tableName: order
+            tableName: order_
             columns:
               - column:
                   name: order_id

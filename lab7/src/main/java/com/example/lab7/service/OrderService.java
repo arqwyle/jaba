@@ -2,6 +2,7 @@ package com.example.lab7.service;
 
 import com.example.lab7.model.Address;
 import com.example.lab7.model.Order;
+import com.example.lab7.model.Payment;
 import com.example.lab7.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,12 @@ public class OrderService {
         return orderRepository.findByDateBetween(startDate, endDate);
     }
 
-    public List<Order> findOrdersByPaymentType(String paymentType) {
-        return orderRepository.findByPayment_dtype(paymentType);
+    public List<Order> findOrdersByPaymentMethod(Class<? extends Payment> type) {
+        return orderRepository.findByPaymentMethod(type);
     }
 
     public List<Order> findOrdersByCustomerName(String customerName) {
-        return orderRepository.findByCustomer_Name(customerName);
+        return orderRepository.findByCustomerName(customerName);
     }
 
     public List<Order> findOrdersByStatus(String status) {

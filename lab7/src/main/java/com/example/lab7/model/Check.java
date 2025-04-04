@@ -1,10 +1,14 @@
 package com.example.lab7.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
-@DiscriminatorValue("CHECK")
+@Entity
+@Table(name = "check_")
+@Getter
+@Setter
 public class Check extends Payment {
 
     private String name;
-    private String bankID;
+    private String bankId;
 }

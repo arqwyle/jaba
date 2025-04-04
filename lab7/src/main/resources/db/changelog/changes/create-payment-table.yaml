@@ -18,8 +18,3 @@ databaseChangeLog:
                   type: DECIMAL
                   constraints:
                     nullable: false
-              - column:
-                  name: dtype
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
