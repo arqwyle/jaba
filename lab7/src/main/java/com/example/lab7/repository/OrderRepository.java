@@ -1,7 +1,6 @@
 package com.example.lab7.repository;
 
 import com.example.lab7.model.Address;
-import com.example.lab7.model.Measurement;
 import com.example.lab7.model.Order;
 import com.example.lab7.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;

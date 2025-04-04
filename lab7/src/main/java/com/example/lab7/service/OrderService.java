@@ -16,11 +16,11 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public List<Order> findOrdersByAddressCity(Address address) {
+    public List<Order> findOrdersByCustomerAddress(Address address) {
         return orderRepository.findByCustomerAddress(address);
     }
 
-    public List<Order> findOrdersByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<Order> findOrdersByTimeInterval(LocalDateTime startDate, LocalDateTime endDate) {
         return orderRepository.findByDateBetween(startDate, endDate);
     }
 

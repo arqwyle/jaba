@@ -4,6 +4,7 @@ import com.example.lab7.model.*;
 import com.example.lab7.repository.CustomerRepository;
 import com.example.lab7.repository.OrderRepository;
 import com.example.lab7.repository.PaymentRepository;
+import com.example.lab7.service.OrderService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class OrderServiceIntegrationTest {
     }
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
@@ -71,7 +75,7 @@ public class OrderServiceIntegrationTest {
         order.setCustomer(customer);
         orderRepository.save(order);
 
-        List<Order> orders = orderRepository.findByCustomerAddress(address);
+        List<Order> orders = orderService.findOrdersByCustomerAddress(address);
 
         assertEquals(1, orders.size());
         assertEquals(address.getStreet(), orders.get(0).getCustomer().getAddress().getStreet());
@@ -106,14 +110,14 @@ public class OrderServiceIntegrationTest {
 
         LocalDateTime startDate = now.minusHours(1);
         LocalDateTime endDate = now.plusHours(1);
-        List<Order> orders = orderRepository.findByDateBetween(startDate, endDate);
+        List<Order> orders = orderService.findOrdersByTimeInterval(startDate, endDate);
 
         assertEquals(1, orders.size());
         assertEquals(now, orders.get(0).getDate());
     }
 
     @Test
-    void findOrdersByPaymentType() {
+    void findOrdersByPaymentMethod() {
         Cash cash = new Cash();
         cash.setAmount(BigDecimal.valueOf(100));
         cash.setCashTendered(BigDecimal.valueOf(100));
@@ -136,7 +140,7 @@ public class OrderServiceIntegrationTest {
         order.setCustomer(customer);
         orderRepository.save(order);
 
-        List<Order> orders = orderRepository.findByPaymentMethod(Cash.class);
+        List<Order> orders = orderService.findOrdersByPaymentMethod(Cash.class);
 
         assertEquals(1, orders.size());
         assertInstanceOf(Cash.class, orders.get(0).getPayment());
@@ -166,14 +170,14 @@ public class OrderServiceIntegrationTest {
         order.setCustomer(customer);
         orderRepository.save(order);
 
-        List<Order> orders = orderRepository.findByCustomerName("aboba");
+        List<Order> orders = orderService.findOrdersByCustomerName("aboba");
 
         assertEquals(1, orders.size());
         assertEquals("aboba", orders.get(0).getCustomer().getName());
     }
 
     @Test
-    void shouldFindOrdersByStatus() {
+    void findOrdersByStatus() {
         Cash cash = new Cash();
         cash.setAmount(BigDecimal.valueOf(100));
         cash.setCashTendered(BigDecimal.valueOf(100));
@@ -196,7 +200,7 @@ public class OrderServiceIntegrationTest {
         order.setCustomer(customer);
         orderRepository.save(order);
 
-        List<Order> orders = orderRepository.findByStatus("aboba");
+        List<Order> orders = orderService.findOrdersByStatus("aboba");
 
         assertEquals(1, orders.size());
         assertEquals("aboba", orders.get(0).getStatus());
