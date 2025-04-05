@@ -5,8 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "check_")
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class Check extends Payment {
 
     private String name;

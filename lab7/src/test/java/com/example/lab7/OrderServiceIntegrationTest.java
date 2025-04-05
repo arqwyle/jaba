@@ -19,8 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Testcontainers
@@ -78,9 +77,7 @@ public class OrderServiceIntegrationTest {
         List<Order> orders = orderService.findOrdersByCustomerAddress(address);
 
         assertEquals(1, orders.size());
-        assertEquals(address.getStreet(), orders.get(0).getCustomer().getAddress().getStreet());
-        assertEquals(address.getCity(), orders.get(0).getCustomer().getAddress().getCity());
-        assertEquals(address.getZipcode(), orders.get(0).getCustomer().getAddress().getZipcode());
+        assertEquals(orders.get(0).getCustomer().getAddress(), address);
     }
 
     @Test

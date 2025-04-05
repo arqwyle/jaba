@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Embeddable
-@Getter
-@Setter
+@Data
 public abstract class Measurement {
 
     private String name;

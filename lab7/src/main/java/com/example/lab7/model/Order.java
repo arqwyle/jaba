@@ -8,8 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "order_")
-@Getter
-@Setter
+@Data
 public class Order {
 
     @Id

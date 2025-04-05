@@ -6,8 +6,8 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class Cash extends Payment {
 
     private BigDecimal cashTendered;

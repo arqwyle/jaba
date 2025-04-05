@@ -6,8 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Payment {
 

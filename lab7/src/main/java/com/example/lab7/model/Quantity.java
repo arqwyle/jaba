@@ -4,8 +4,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class Quantity extends Measurement {
 
     private BigDecimal value;

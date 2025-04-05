@@ -6,8 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
 public class Credit extends Payment {
 
     private String number;
