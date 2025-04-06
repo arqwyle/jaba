@@ -20,6 +20,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
