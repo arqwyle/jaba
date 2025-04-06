@@ -1,5 +1,6 @@
 package com.example.lab8.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,16 +20,11 @@ public class User implements UserDetails {
     private Long id;
     private String username;
     private String password;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    public enum Role {
-        USER, ADMIN
-    }
+    private String authority;
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority(authority));
     }
 }
