@@ -3,27 +3,31 @@ package com.example.lab8;
 import com.example.lab8.model.User;
 import com.example.lab8.repository.UserRepository;
 import com.example.lab8.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @Testcontainers
+@AutoConfigureMockMvc
 public class UserControllerIntegrationTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:17"))
@@ -39,12 +43,6 @@ public class UserControllerIntegrationTest {
     }
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
@@ -55,6 +53,9 @@ public class UserControllerIntegrationTest {
         userRepository.deleteAll();
     }
 
+    @Autowired
+    private MockMvc mockMvc;
+
     User createUser(String username, String authority) {
         User user = new User();
         user.setUsername(username);
@@ -63,191 +64,233 @@ public class UserControllerIntegrationTest {
         return userService.createUser(user);
     }
 
-    String loginAndGetToken(String username) {
-        String loginUrl = "http://localhost:" + port + "/auth/login";
+    @Test
+    void getAllUsersAsAdmin() throws Exception {
+        createUser("admin", "ADMIN");
+
         Map<String, String> loginRequest = Map.of(
-                "username", username,
+                "username", "admin",
                 "password", "password"
         );
-        ResponseEntity<String> response = restTemplate.postForEntity(loginUrl, loginRequest, String.class);
-        return response.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String adminToken = loginResult.getResponse().getContentAsString();
+
+        mockMvc.perform(get("/users")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.username == 'admin')]").exists());;
     }
 
     @Test
-    void getAllUsersAsAdmin() {
-        createUser("admin", "ADMIN");
-        String adminToken = loginAndGetToken("admin");
-
-        String url = "http://localhost:" + port + "/users";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
-
-        ResponseEntity<User[]> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                User[].class
-        );
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(Arrays.stream(response.getBody()).anyMatch(u -> u.getUsername().equals("admin")));
-    }
-
-    @Test
-    void getAllUsersAsUser() {
+    void getAllUsersAsUser() throws Exception {
         createUser("user", "USER");
-        String userToken = loginAndGetToken("user");
 
-        String url = "http://localhost:" + port + "/users";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(userToken);
-
-        ResponseEntity<User[]> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                User[].class
+        Map<String, String> loginRequest = Map.of(
+                "username", "user",
+                "password", "password"
         );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(Arrays.stream(response.getBody()).anyMatch(u -> u.getUsername().equals("user")));
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String userToken = loginResult.getResponse().getContentAsString();
+
+        mockMvc.perform(get("/users")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.username == 'user')]").exists());
     }
 
     @Test
-    void createUserAsAdmin() {
+    void createUserAsAdmin() throws Exception {
         createUser("admin", "ADMIN");
-        String adminToken = loginAndGetToken("admin");
 
-        String url = "http://localhost:" + port + "/users";
+        Map<String, String> loginRequest = Map.of(
+                "username", "admin",
+                "password", "password"
+        );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String adminToken = loginResult.getResponse().getContentAsString();
+
         User newUser = createUser("newUser", "USER");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<User> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                new HttpEntity<>(newUser, headers),
-                User.class
-        );
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("newUser", response.getBody().getUsername());
+        mockMvc.perform(post("/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("newUser"));
     }
 
     @Test
-    void createUserAsUser() {
+    void createUserAsUser() throws Exception {
         createUser("user", "USER");
-        String userToken = loginAndGetToken("user");
 
-        String url = "http://localhost:" + port + "/users";
+        Map<String, String> loginRequest = Map.of(
+                "username", "user",
+                "password", "password"
+        );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String userToken = loginResult.getResponse().getContentAsString();
+
         User newUser = createUser("newUser", "USER");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(userToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                new HttpEntity<>(newUser, headers),
-                String.class
-        );
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        mockMvc.perform(post("/users")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void updateUserAsAdmin() {
+    void updateUserAsAdmin() throws Exception {
         createUser("admin", "ADMIN");
         User userToUpdate = createUser("oldUser", "USER");
-        String adminToken = loginAndGetToken("admin");
 
-        String url = "http://localhost:" + port + "/users/" + userToUpdate.getId();
+        Map<String, String> loginRequest = Map.of(
+                "username", "admin",
+                "password", "password"
+        );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String adminToken = loginResult.getResponse().getContentAsString();
+
         userToUpdate.setUsername("updatedUser");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<User> response = restTemplate.exchange(
-                url,
-                HttpMethod.PUT,
-                new HttpEntity<>(userToUpdate, headers),
-                User.class
-        );
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("updatedUser", response.getBody().getUsername());
+        mockMvc.perform(put("/users/" + userToUpdate.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userToUpdate))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("updatedUser"));
     }
 
     @Test
-    void updateUserAsUser() {
+    void updateUserAsUser() throws Exception {
         createUser("user", "USER");
         User userToUpdate = createUser("oldUser", "USER");
-        String userToken = loginAndGetToken("user");
 
-        String url = "http://localhost:" + port + "/users/" + userToUpdate.getId();
+        Map<String, String> loginRequest = Map.of(
+                "username", "user",
+                "password", "password"
+        );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String userToken = loginResult.getResponse().getContentAsString();
+
         userToUpdate.setUsername("updatedUser");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(userToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.PUT,
-                new HttpEntity<>(userToUpdate, headers),
-                String.class
-        );
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        mockMvc.perform(put("/users/" + userToUpdate.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userToUpdate))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void deleteUserAsAdmin() {
+    void deleteUserAsAdmin() throws Exception {
         createUser("admin", "ADMIN");
         User userToDelete = createUser("userToDelete", "USER");
-        String adminToken = loginAndGetToken("admin");
 
-        String url = "http://localhost:" + port + "/users/" + userToDelete.getId();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
-
-        ResponseEntity<Void> response = restTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                new HttpEntity<>(headers),
-                Void.class
+        Map<String, String> loginRequest = Map.of(
+                "username", "admin",
+                "password", "password"
         );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String adminToken = loginResult.getResponse().getContentAsString();
+
+        mockMvc.perform(delete("/users/" + userToDelete.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    void deleteUserAsUser() {
+    void deleteUserAsUser() throws Exception {
         createUser("user", "USER");
         User userToDelete = createUser("userToDelete", "USER");
-        String userToken = loginAndGetToken("user");
 
-        String url = "http://localhost:" + port + "/users/" + userToDelete.getId();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(userToken);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                new HttpEntity<>(headers),
-                String.class
+        Map<String, String> loginRequest = Map.of(
+                "username", "user",
+                "password", "password"
         );
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String userToken = loginResult.getResponse().getContentAsString();
+
+        mockMvc.perform(delete("/users/" + userToDelete.getId())
+                        .header("Authorization", "Bearer " + userToken)
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 }
