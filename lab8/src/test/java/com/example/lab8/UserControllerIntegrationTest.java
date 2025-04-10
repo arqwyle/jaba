@@ -56,6 +56,9 @@ public class UserControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     User createUser(String username, String authority) {
         User user = new User();
         user.setUsername(username);
@@ -72,12 +75,10 @@ public class UserControllerIntegrationTest {
                 "username", "admin",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -98,12 +99,10 @@ public class UserControllerIntegrationTest {
                 "username", "user",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -124,12 +123,10 @@ public class UserControllerIntegrationTest {
                 "username", "admin",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -155,12 +152,10 @@ public class UserControllerIntegrationTest {
                 "username", "user",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -186,12 +181,10 @@ public class UserControllerIntegrationTest {
                 "username", "admin",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -218,12 +211,10 @@ public class UserControllerIntegrationTest {
                 "username", "user",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -249,12 +240,10 @@ public class UserControllerIntegrationTest {
                 "username", "admin",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -276,12 +265,10 @@ public class UserControllerIntegrationTest {
                 "username", "user",
                 "password", "password"
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andReturn();
