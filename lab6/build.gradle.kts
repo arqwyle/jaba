@@ -25,9 +25,10 @@ dependencies {
 	implementation("org.slf4j:slf4j-api")
 	runtimeOnly("ch.qos.logback:logback-classic")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.mockito:mockito-core")
-	testImplementation("org.testcontainers:postgresql:1.18.3")
-	testImplementation("org.testcontainers:junit-jupiter:1.18.3")
+	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.testcontainers:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
