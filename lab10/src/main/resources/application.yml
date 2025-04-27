@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: lab10
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/lab10
+      client:
+        registration:
+          keycloak:
+            client-id: lab10
+            client-secret: dqNlj3qb4ymPhqjKaZaeUjZ0plNvH8JY
+            scope: openid, profile
+            authorization-grant-type: authorization_code
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8180/realms/lab10
+            user-name-attribute: preferred_username
+keycloak:
+  server-url: http://localhost:8180
+  realm: lab10
+  username: admin
+  password: admin
